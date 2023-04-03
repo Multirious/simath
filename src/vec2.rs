@@ -51,8 +51,8 @@ impl<T: ConstOne> Vec2<T> {
 
 macro_rules! ops_impl {
 (@self $trait_name:ident $fn_name:ident $operator:tt) => {
-    impl<T: $trait_name<Output = T>> $trait_name for Vec2<T> {
-        type Output = Vec2<T>;
+    impl<A: $trait_name<Output = B>, B> $trait_name for Vec2<A> {
+        type Output = Vec2<B>;
 
         fn $fn_name(self, rhs: Self) -> Self::Output {
             Vec2::new(self.x $operator rhs.x, self.y $operator rhs.y)
@@ -70,10 +70,10 @@ macro_rules! ops_impl {
 };
 
 (@scalar $trait_name:ident $fn_name:ident $operator:tt) => {
-    impl<T: $trait_name<Output = T> + Copy> $trait_name<T> for Vec2<T> {
-        type Output = Vec2<T>;
+    impl<A: $trait_name<Output = B> + Copy, B> $trait_name<A> for Vec2<A> {
+        type Output = Vec2<B>;
 
-        fn $fn_name(self, rhs: T) -> Self::Output {
+        fn $fn_name(self, rhs: A) -> Self::Output {
             Vec2::new(self.x $operator rhs, self.y $operator rhs)
         }
     }
@@ -94,11 +94,39 @@ ops_impl! {@self Sub sub -}
 ops_impl! {@self Mul mul *}
 ops_impl! {@self Div div /}
 ops_impl! {@self Rem rem %}
+ops_impl! {@self BitAnd bitand &}
+ops_impl! {@self BitOr bitor |}
+ops_impl! {@self BitXor bitxor ^}
+ops_impl! {@self Shl shl <<}
+ops_impl! {@self Shr shr >>}
+
+impl<A: Not<Output = B>, B> Not for Vec2<A> {
+    type Output = Vec2<B>;
+
+    fn not(self) -> Self::Output {
+        Vec2::new(!self.x, !self.y)
+    }
+}
+
+impl<A: Neg<Output = B>, B> Neg for Vec2<A> {
+    type Output = Vec2<B>;
+
+    fn neg(self) -> Self::Output {
+        Vec2::new(-self.x, -self.y)
+    }
+}
+
 ops_impl! {@self @assign AddAssign add_assign +=}
 ops_impl! {@self @assign SubAssign sub_assign -=}
 ops_impl! {@self @assign MulAssign mul_assign *=}
 ops_impl! {@self @assign DivAssign div_assign /=}
 ops_impl! {@self @assign RemAssign rem_assign %=}
+ops_impl! {@self @assign BitAndAssign bitand_assign &=}
+ops_impl! {@self @assign BitOrAssign bitor_assign |=}
+ops_impl! {@self @assign BitXorAssign bitxor_assign ^=}
+ops_impl! {@self @assign ShlAssign shl_assign <<=}
+ops_impl! {@self @assign ShrAssign shr_assign >>=}
+
 ops_impl! {@scalar Mul mul *}
 ops_impl! {@scalar Div div /}
 ops_impl! {@scalar @assign MulAssign mul_assign *=}
